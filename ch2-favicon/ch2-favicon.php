@@ -11,6 +11,8 @@ License: GPLv2
 
 add_action( 'wp_head', 'ch2fi_page_header_output' );
 function ch2fi_page_header_output() {
+    $plugins_url = plugins_url();
+    $icon_url1 = plugins_url( 'favicon.ico');
     $icon_url = plugins_url( 'favicon.ico', __FILE__ );
     ?>
         <link rel="shortcut icon" href="<?php echo $icon_url; ?>" type="image/x-icon" />
