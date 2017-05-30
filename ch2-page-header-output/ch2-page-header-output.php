@@ -58,9 +58,103 @@ function ch2pho_set_default_options_array() {
 
 add_action( 'admin_menu', 'ch2pho_settings_menu', 1 );
 function ch2pho_settings_menu() {
-    add_options_page( 'My Google Analytics Configuration',
+    $options_page = add_options_page( 'My Google Analytics Configuration',
         'My Google Analytics', 'manage_options',
         'ch2pho-my-google-analytics', 'ch2pho_config_page' );
+    if ( $options_page )
+        add_action( 'load-' . $options_page, 'ch2pho_help_tabs' );
+}
+
+// Begin: Help functions
+function ch2pho_help_tabs() {
+    $screen = get_current_screen();
+    $screen->add_help_tab( array(
+        'id' => 'ch2pho-plugin-help-instructions',
+        'title' => 'Instructions',
+        'callback' => 'ch2pho_plugin_help_instructions'
+    ) );
+    $screen->add_help_tab( array(
+        'id' => 'ch2pho-plugin-help-faq',
+        'title' => 'FAQ',
+        'callback' => 'ch2pho_plugin_help_faq',
+    ) );
+    $screen->set_help_sidebar( '<p>This is the sidebar content</p>' );
+}
+
+function ch2pho_plugin_help_instructions() { ?>
+    <p>These are instructions explaining how to use this plugin.</p>
+<?php }
+
+function ch2pho_plugin_help_faq() { ?>
+    <p>These are the most frequently asked questions on the use of this plugin.</p>
+<?php }
+// End: Help fuctions
+
+function ch2pho_config_page() {
+    // Retrieve plugin configuration options from database
+    $options = get_option( 'ch2pho_options' );
+?>
+    <div id="ch2pho-general" class="wrap">
+        <h2>My Google Analytics</h2>
+
+        <?php if ( isset( $_GET['message'] ) && $_GET['message'] == '1' ) { ?>
+            <div id='message' class='updated fade'>
+                <p><strong>SettingsSaved</strong></p>
+            </div>
+        <?php } ?>
+
+        <form method="post" action="admin-post.php">
+            <input type="hidden" name="action" value="save_ch2pho_options" />
+            <!-- Adding security through hidden referrer field -->
+            <?php wp_nonce_field( 'ch2pho' ); ?>
+            Account Name: <input type="text" name="ga_account_name"
+                value="<?php echo esc_html( $options['ga_account_name'] );?>"/>
+            <br />
+            Track Outgoing Links: <input type="checkbox" name="track_outgoing_links" 
+                <?php if ($options['track_outgoing_links'] ) echo ' checked="checked" ';?>/>
+            <br />
+            <input type="submit" value="Submit" class="button-primary"/>
+        </form>
+    </div>
+<?php }
+
+add_action( 'admin_init', 'ch2pho_admin_init' );
+function ch2pho_admin_init() {
+    add_action( 'admin_post_save_ch2pho_options', 'process_ch2pho_options' );
+}
+function process_ch2pho_options() {
+    // Check that user has proper security level
+    if ( !current_user_can( 'manage_options' ) )
+        wp_die( 'Not allowed' );
+
+    // Check that nonce field created in configuration form is present
+    check_admin_referer( 'ch2pho' );
+
+    // Retrieve original plugin options array
+    $options = get_option( 'ch2pho_options' );
+
+    // Cycle through all text form fields and store their values in the options array
+    foreach ( array( 'ga_account_name' ) as $option_name ) {
+        if ( isset( $_POST[$option_name] ) ) {
+            $options[$option_name] = sanitize_text_field( $_POST[$option_name] );
+        }
+    }
+    // Cycle through all check box form fields and set the options
+    // array to true or false values based on presence of variables
+    foreach ( array( 'track_outgoing_links' ) as $option_name ) {
+        if ( isset( $_POST[$option_name] ) ) {
+            $options[$option_name] = true;
+        } else {
+            $options[$option_name] = false;
+        }
+    }
+    // Store updated options array to database
+    update_option( 'ch2pho_options', $options );
+    // Redirect the page to the configuration form that was processed
+    wp_redirect( add_query_arg(
+       array( 'page' => 'ch2pho-my-google-analytics', 'message' => '1' ),
+       admin_url( 'options-general.php' ) ) );
+    exit;
 }
 
 ?>
