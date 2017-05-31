@@ -9,10 +9,7 @@ Author URI: http://ylefebvre.ca
 License: GPLv2
 */
 
-add_action( 'admin_menu', 'ch3hmi_hide_menu_item' );
-function ch3hmi_hide_menu_item() {
-    remove_menu_page( 'link-manager.php' );
-    remove_submenu_page( 'options-general.php',
-        'options-permalink.php' );
+if ( is_admin() ) {
+    require plugin_dir_path( __FILE__ ) . 'ch3-hide-menu-item-admin-functions.php';
 }
 ?>
