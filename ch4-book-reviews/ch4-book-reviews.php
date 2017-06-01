@@ -113,4 +113,63 @@ function ch4_br_template_include( $template_path ) {
     return $template_path;
 }
 
+// 5- add a shortcode to display book reviews
+add_shortcode( 'book-review-list', 'ch4_br_book_review_list' );
+function ch4_br_book_review_list() {
+    // Preparation of query array to retrieve 5 book reviews
+    $query_params = array( 
+        'post_type' => 'book_reviews',
+        'post_status' => 'publish',
+        'posts_per_page' => 5 );
+
+    // Retrieve page query variable, if present
+    $page_num = ( get_query_var( 'paged' ) ? get_query_var( 'paged' ) : 1 );
+    // If page number is higher than 1, add to query array
+    if ( $page_num != 1 )
+        $query_params['paged'] = $page_num;
+
+    // Execution of post query
+    $book_review_query = new WP_Query;
+    $book_review_query->query( $query_params );
+
+    // Check if any posts were returned by the query
+    if ( $book_review_query->have_posts() ) {
+
+        // Display posts in table layout
+        $output = '<table>';
+        $output .= '<tr><th style="width: 350px"><strong>';
+        $output .= 'Title</strong></th>';
+        $output .= '<th><strong>Author</strong></th></tr>';
+
+        // Cycle through all items retrieved
+        while ( $book_review_query->have_posts() ) {
+            $book_review_query->the_post();
+            $output .= '<tr><td><a href="' . get_permalink();
+            $output .= '">';
+            $output .= get_the_title( get_the_ID() ) . '</a></td>';
+            $output .= '<td>';
+            $output .= esc_html( get_post_meta( get_the_ID(), 'book_author', true ) );
+            $output .= '</td></tr>';
+        }
+
+        $output .= '</table>';
+
+        // Display page navigation links
+        if ( $book_review_query->max_num_pages > 1 ) {
+            $output .= '<nav id="nav-below">';
+            $output .= '<div class="nav-previous">';
+            $output .= get_next_posts_link( '<span class="meta-nav">&larr;</span>Older reviews', $book_review_query->max_num_pages );
+            $output .= '</div>';
+            $output .= '<div class="nav-next">';
+            $output .= get_previous_posts_link( 'Newer reviews <span class="meta-nav">&rarr;</span>', $book_review_query->max_num_pages );
+            $output .= '</div>';
+            $output .= '</nav>';
+        }
+
+        // Reset post data query
+        wp_reset_postdata();
+    }
+    return $output;
+}
+
 ?>
