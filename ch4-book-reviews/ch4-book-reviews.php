@@ -101,7 +101,14 @@ function ch4_br_template_include( $template_path ) {
             } else {
                 $template_path = plugin_dir_path( __FILE__ ) . '/single-book_reviews.php';
             }
+        } elseif ( is_archive() ) {
+            if ( $theme_file = locate_template( array ( 'archive-book_reviews.php' ) ) ) {
+                $template_path = $theme_file;
+            } else {
+                $template_path = plugin_dir_path( __FILE__ ) . '/archive-book_reviews.php';
+            }
         }
+
     }
     return $template_path;
 }
