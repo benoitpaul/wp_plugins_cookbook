@@ -85,6 +85,30 @@ function ch4_br_display_review_details_meta_box( $book_review ) {
                     </select>
                 </td>
             </tr>
+
+            <tr>
+                <td>Book Type</td>
+                <td>
+                    <?php
+                        // Retrieve array of types assigned to post
+                        $assigned_types = wp_get_post_terms( $book_review->ID, 'book_reviews_book_type' );
+                        // Retrieve array of all book types in system
+                        $book_types = get_terms( 'book_reviews_book_type', array( 'orderby' => 'name', 'hide_empty' => 0) );
+                        if ( $book_types ) {
+                            echo '<select name="book_review_book_type"';
+                            echo ' style="width: 400px">';
+                            foreach ( $book_types as $book_type ) {
+                                echo '<option value="' . $book_type->term_id;
+                                echo '" ' . selected( $assigned_types[0]->term_id,
+                                $book_type->term_id ) . '>';
+                                echo esc_html( $book_type->name );
+                                echo '</option>';
+                            }
+                            echo '</select>';
+                        } 
+                    ?>
+                </td>
+            </tr>
         </table>
     <?php 
 }
@@ -100,6 +124,9 @@ function ch4_br_add_book_review_fields( $book_review_id, $book_review ) {
         }
         if ( isset( $_POST['book_review_rating'] ) &&  $_POST['book_review_rating'] != '' ) {
             update_post_meta( $book_review_id, 'book_rating', $_POST['book_review_rating'] );
+        }
+        if ( isset( $_POST['book_review_book_type'] ) && $_POST['book_review_book_type'] != '' ) {
+            wp_set_post_terms( $book_review->ID, $_POST['book_review_book_type'], 'book_reviews_book_type' );
         }
     }
 }
@@ -184,6 +211,14 @@ function ch4_br_book_review_list() {
         wp_reset_postdata();
     }
     return $output;
+}
+
+// 6- insert Book Type submenu, when constructing admin menu, even if the taxonomy's show_ui=false'
+add_action( 'admin_menu', 'ch4_br_add_book_type_item' );
+function ch4_br_add_book_type_item() {
+    global $submenu;
+    $submenu['edit.php?post_type=book_reviews'][501] = array( 'Book Type', 'manage_options',
+        admin_url( '/edit-tags.php?taxonomy=book_reviews_book_type&post_type=book_reviews' ) );
 }
 
 ?>
