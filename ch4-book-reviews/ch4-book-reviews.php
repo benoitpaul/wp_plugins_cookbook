@@ -302,4 +302,14 @@ function ch4_br_perform_book_type_filtering( $query ) {
     }
 }
 
+// 9-  change title
+add_filter( 'wp_title', 'ch4_br_format_book_review_title' );
+function ch4_br_format_book_review_title( $the_title ) {
+    if ( get_post_type() == 'book_reviews' && is_single() ) {
+        $book_author = esc_html( get_post_meta( get_the_ID(), 'book_author', true ) );
+        $the_title .= ' by ' . $book_author;
+    }
+    return $the_title;
+}
+
 ?>
