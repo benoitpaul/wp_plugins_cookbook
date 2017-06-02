@@ -221,4 +221,55 @@ function ch4_br_add_book_type_item() {
         admin_url( '/edit-tags.php?taxonomy=book_reviews_book_type&post_type=book_reviews' ) );
 }
 
+// 7- add columns to the custom post type list page
+// 7.1 define columns
+add_filter( 'manage_edit-book_reviews_columns', 'ch4_br_add_columns' );
+function ch4_br_add_columns( $columns ) {
+    $columns['book_reviews_author'] = 'Author';
+    $columns['book_reviews_rating'] = 'Rating';
+    $columns['book_reviews_type'] = 'Type';
+    unset( $columns['comments'] );
+    return $columns;
+}
+// 7.2 retrieve values for columns
+add_action( 'manage_posts_custom_column', 'ch4_br_populate_columns' );
+function ch4_br_populate_columns( $column ) {
+    if ( 'book_reviews_author' == $column ) {
+        $book_author = esc_html(get_post_meta( get_the_ID(),'book_author', true ) );
+        echo $book_author;
+    } elseif ( 'book_reviews_rating' == $column ) {
+        $book_rating = get_post_meta( get_the_ID(), 'book_rating', true );
+        echo $book_rating . ' stars';
+    } elseif ( 'book_reviews_type' == $column ) {
+        $book_types = wp_get_post_terms( get_the_ID(), 'book_reviews_book_type' );
+        if ( $book_types )
+            echo $book_types[0]->name;
+        else
+            echo 'None Assigned';
+    }
+}
+// 7.3 allow column sorting
+add_filter( 'manage_edit-book_reviews_sortable_columns', 'ch4_br_author_column_sortable' );
+function ch4_br_author_column_sortable( $columns ) {
+    $columns['book_reviews_author'] = 'book_reviews_author';
+    $columns['book_reviews_rating'] = 'book_reviews_rating';
+    return $columns;
+}
+add_filter( 'request', 'ch4_br_column_ordering' );
+function ch4_br_column_ordering( $vars ) {
+    if ( !is_admin() )
+        return $vars;
+
+    if ( isset( $vars['orderby'] ) && 'book_reviews_author' == $vars['orderby'] ) {
+        $vars = array_merge( $vars, array(
+            'meta_key' => 'book_author',
+            'orderby' => 'meta_value' ) );
+    } elseif ( isset( $vars['orderby'] ) && 'book_reviews_rating' == $vars['orderby'] ) {
+        $vars = array_merge( $vars, array(
+            'meta_key' => 'book_rating',
+            'orderby' => 'meta_value_num' ) );
+    }
+    return $vars;
+}
+
 ?>
