@@ -38,6 +38,20 @@ function ch4_br_create_book_post_type() {
             'rewrite' => array( 'slug' => 'awesome_book_reviews' )
         )
     );
+
+    register_taxonomy(
+        'book_reviews_book_type',
+        'book_reviews',
+        array(
+            'labels' => array(
+                'name' => 'Book Type',
+                'add_new_item' => 'Add New Book Type',
+                'new_item_name' => "New Book Type Name" ),
+            'show_ui' => true,
+            'show_tagcloud' => false,
+            'hierarchical' => true
+            )
+        );
 }
 
 // 2- create a meta box for custom fields when the admin page is visited
