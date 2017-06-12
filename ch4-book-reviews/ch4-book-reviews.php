@@ -12,6 +12,7 @@ License: GPLv2
 // 1- create the new post type when WP is initialized
 add_action( 'init', 'ch4_br_create_book_post_type' );
 function ch4_br_create_book_post_type() {
+    global $wp_filter;
     register_post_type( 'book_reviews',
         array(
             'labels' => array(
@@ -57,10 +58,7 @@ function ch4_br_create_book_post_type() {
 // 2- create a meta box for custom fields when the admin page is visited
 add_action( 'admin_init', 'ch4_br_admin_init' );
 function ch4_br_admin_init() {
-    add_meta_box( 'ch4_br_review_details_meta_box',
-        'Book Review Details',
-        'ch4_br_display_review_details_meta_box',
-        'book_reviews', 'normal', 'high' );
+    add_meta_box( 'ch4_br_review_details_meta_box', 'Book Review Details', 'ch4_br_display_review_details_meta_box', 'book_reviews', 'normal', 'high' );
 }
 function ch4_br_display_review_details_meta_box( $book_review ) {
     // Retrieve current author and rating based on review ID
